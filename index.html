@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鬼灭之刃 私密明信片</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+
+        body {
+            /* 你的鬼灭之刃背景图 */
+            background: url("https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/82a537774fe8433bafd2ee60cb7d6cad.jpg~tplv-a9rns2rl98-image.png?rcl=20251220221815BAD2441841B3FE4DF230&rk3s=8e244e95&rrcfp=dafada99&x-expires=2082464296&x-signature=IgJMznRcA4vWOto9Ctf880pcvxE%3D") no-repeat center center fixed;
+            background-size: cover;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 背景遮罩层（增强文字可读性） */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        /* 密码验证容器样式（无标题） */
+        .password-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            display: block;
+            border: 1px solid #f87171; /* 鬼灭经典红边 */
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .password-input:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.2);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #dc2626;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #b91c1c;
+            box-shadow: 0 4px 8px rgba(185, 28, 28, 0.3);
+        }
+
+        .error-tip {
+            color: #e53e3e;
+            font-size: 14px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* 明信片容器样式（无标题、无内容标签，输入框淡粉色背景，纯文本留言区） */
+        .postcard-container {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            background-color: rgba(255, 253, 248, 0.95);
+            border: 2px solid #f87171;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            padding: 30px;
+            margin: 20px auto;
+        }
+
+        .postcard-content {
+            margin: 0 0 30px 0;
+        }
+
+        .postcard-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            background-color: #fef0f0; /* 淡粉色背景 */
+            font-size: 16px;
+            outline: none;
+            resize: none;
+            min-height: 200px;
+            transition: all 0.3s;
+        }
+
+        .postcard-input:focus {
+            border-color: #dc2626;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.2);
+            background-color: #fee8e8; /* 聚焦时稍深一点的淡粉色 */
+        }
+
+        /* 纯文本留言区样式 */
+        .comment-area {
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #f87171;
+        }
+
+        .comment-title {
+            color: #7f1d1d;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        /* 【彻底隐藏】覆盖所有版本Valine的昵称、邮箱、网址输入框及相关区域 */
+        /* 1. 隐藏输入框容器 */
+        .vrow:has(.vnick), .vrow:has(.vmail), .vrow:has(.vurl) {
+            display: none !important;
+        }
+        /* 2. 隐藏单个输入框（兼容旧版本） */
+        .vnick, .vmail, .vurl, .v-input-url, .v-url {
+            display: none !important;
+        }
+        /* 3. 隐藏留言中可能出现的网址显示 */
+        .vcard .vurl, .v-comment .vurl {
+            display: none !important;
+        }
+
+        /* 留言输入框样式统一 */
+        .vcontent {
+            border: 1px solid #fca5a5 !important;
+            border-radius: 6px !important;
+            background-color: #fef0f0 !important;
+            font-size: 16px !important;
+        }
+
+        .vcontent:focus {
+            border-color: #dc2626 !important;
+            box-shadow: 0 0 8px rgba(220, 38, 38, 0.2) !important;
+            background-color: #fee8e8 !important;
+        }
+
+        /* 提交按钮样式优化，贴合整体风格 */
+        .vsubmit {
+            background-color: #dc2626 !important;
+            border: none !important;
+            border-radius: 6px !important;
+            color: #fff !important;
+            padding: 8px 16px !important;
+            cursor: pointer !important;
+        }
+
+        .vsubmit:hover {
+            background-color: #b91c1c !important;
+            box-shadow: 0 2px 4px rgba(185, 28, 28, 0.3) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 密码验证区域（无标题） -->
+    <div class="password-container" id="passwordBox">
+        <input type="password" class="password-input" id="passwordInput" placeholder="请输入访问密码">
+        <button class="submit-btn" id="verifyBtn">验证访问</button>
+        <p class="error-tip" id="errorTip">密码错误，请重新输入</p>
+    </div>
+
+    <!-- 明信片区域（无标题、无内容标签，输入框预填内容，纯文本留言区） -->
+    <div class="postcard-container" id="postcardBox">
+        <div class="postcard-content">
+            <textarea class="postcard-input" id="postcardContent">给安安的一封信
+见字如晤，展信舒颜，
+这是我学习做的第一个网站，想着防止被人看到来着，所以做了几层安防。
+咳咳，接下来是正题：很抱歉 没能与你进行之前的约定。兴许是时光不对，既然我没能继续保护你了 那接下来的日子你要加倍的关心自己 保护好自己。然后非常感谢你这半年来的陪伴，有你在的日子 我真的每天都过得很开心 很充实✧٩(ˊωˋ*)و✧。未来还能有机会偶尔和你聊聊天就好了^ω^想说的话感觉和你怎样都说不完，只是没能说些让你感兴趣的话题，非常抱歉。
+最后祝你圣诞快乐，一定要开心每一天～
+ps:还想着把英文隔一行写一句写到底再从上面写下来，不过感觉你会看的很费劲就没这么干了，也是防止别人看到来着。很多东西不太适合送了就没给你，有两包黄山带回来的馍片和胡辣汤味薯片（我挺喜欢喝胡辣汤来着，看到就买了哈哈，给你尝尝，我还没吃口腔溃疡来着，你若不喜欢的话千万别勉强吃哈，毕竟每个人爱好不一样，很正常的），你吃完要多喝水哈。</textarea>
+        </div>
+
+        <!-- 纯文本留言区 -->
+        <div class="comment-area">
+            <p class="comment-title">留言板</p>
+            <div id="vcomments"></div> <!-- Valine 留言框容器 -->
+        </div>
+    </div>
+
+    <!-- 引入 Valine 留言系统（指定旧版本，避免兼容性问题） -->
+    <script src="https://unpkg.com/valine@1.4.14/dist/Valine.min.js"></script>
+    <script>
+        const DEFAULT_PASSWORD = "81";
+
+        // 获取页面核心元素
+        const passwordBox = document.getElementById("passwordBox");
+        const postcardBox = document.getElementById("postcardBox");
+        const passwordInput = document.getElementById("passwordInput");
+        const verifyBtn = document.getElementById("verifyBtn");
+        const errorTip = document.getElementById("errorTip");
+
+        // 密码验证逻辑
+        verifyBtn.addEventListener("click", function() {
+            const inputPassword = passwordInput.value.trim();
+            if (inputPassword === "") {
+                errorTip.textContent = "请先输入密码";
+                errorTip.style.display = "block";
+                return;
+            }
+            if (inputPassword === DEFAULT_PASSWORD) {
+                // 密码正确：隐藏密码框，显示明信片，初始化留言系统
+                passwordBox.style.display = "none";
+                postcardBox.style.display = "block";
+                errorTip.style.display = "none";
+                initValine(); // 初始化留言框
+            } else {
+                // 密码错误：提示并清空输入框
+                errorTip.textContent = "密码错误，请重新输入";
+                errorTip.style.display = "block";
+                passwordInput.value = "";
+            }
+        });
+
+        // 回车快捷键触发验证
+        passwordInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") {
+                verifyBtn.click();
+            }
+        });
+
+        // 初始化 Valine 留言系统（彻底移除网址相关功能和显示）
+        function initValine() {
+            new Valine({
+                el: '#vcomments', // 留言框容器ID
+                appId: '你的LeanCloud App ID', // 替换为你的App ID
+                appKey: '你的LeanCloud App Key', // 替换为你的App Key
+                serverURLs: '你的LeanCloud 服务器地址', // 替换为你的服务器地址
+                placeholder: '请留下你的留言吧～', // 留言输入框提示语
+                avatar: 'hide', // 隐藏头像
+                lang: 'zh-CN', // 中文
+                recordIP: false, // 不记录IP
+                requiredFields: [], // 无需填写任何附加信息
+                visitor: false, // 关闭访问统计
+                enableURL: false, // 禁用网址输入功能
+                enableLink: false, // 禁用网址超链接转换
+                emojiCDN: "", // 关闭表情（可选，进一步精简）
+                emojiMaps: {} // 关闭表情（可选）
+            });
+        }
+    </script>
+</body>
+</html>
